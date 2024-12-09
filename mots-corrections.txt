@@ -3,7 +3,7 @@ A'Aql:A'Aql,A'aql,Aql,Hakle,L'aql,Raql,a'aql,aql,hakle,l'aql,raql
 Aad:Aad,aad
 Aaron:Aaron,Haron,Harun,aaron,haron,harun
 Abba Abdellah:Abba Abdellah,Abba abdellah,abba abdellah
-Abraham:Abraham,Abraham…,Ibrahim,Ibrahima,abraham,abraham…,ibrahim,ibrahima
+Abraham:Abraham…,Ibrahim,Ibrahima,abraham…,ibrahim,ibrahima
 Achoura:Achoura,Hashouvra,achoura,hashouvra
 Adam:Adam,Adhèm,Adhème,adam,adhèm,adhème
 Adnâ:Adnâ,adnâ
@@ -277,6 +277,7 @@ tadabour:Tadabbur,Tadabor,Tadabour,Tadabur,tadabbur,tadabor,tadabour,tadabur
 taqwa:Takwaha,Taqwa,takwaha,taqwa
 tasbih:Tasbih,Tesbih,tasbih,tesbih
 tawbah:Taubah,Tawbah,taubah,tawbah
+tessssst:Tessssst,Testttttttt,tessssst,testttttttt
 testttt:Testttt,Testttttt,testttt,testttttt
 veau d'or:Vaudeau,Vaudeaur,Vaudeur,Vaudor,Veau d'or,vaudeau,vaudeaur,vaudeur,vaudor,veau d'or
 vertueux:Vertueux,Virtueux,vertueux,virtueux
