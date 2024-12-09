@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                                QPushButton, QTextEdit, QTreeWidget, QTreeWidgetItem,
                                QLabel, QProgressBar, QSplitter, QFileDialog, QMessageBox,
-                               QFrame, QGroupBox, QApplication, QDialog, QLineEdit)
+                               QFrame, QGroupBox, QApplication, QDialog, QLineEdit, QListWidget)
 from PyQt6.QtCore import Qt, QUrl, QThread, pyqtSignal
 from PyQt6.QtGui import QFont, QTextCharFormat, QColor, QSyntaxHighlighter, QTextCursor
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -118,6 +118,10 @@ class SpellCheckerGUI(QMainWindow):
         main_splitter.setStretchFactor(0, 7)  # Zone de texte (70%)
         main_splitter.setStretchFactor(1, 3)  # Panneau droit (30%)
         
+        # Définir les tailles initiales
+        window_width = self.width()
+        main_splitter.setSizes([int(window_width * 0.7), int(window_width * 0.3)])
+        
         layout.addWidget(main_splitter, stretch=1)  # Donner le maximum d'espace au splitter
         
         # Barre de progression
@@ -178,7 +182,7 @@ class SpellCheckerGUI(QMainWindow):
     def create_right_panel(self, layout):
         """Crée le panneau droit"""
         # Frame de correction
-        self.correction_group = QGroupBox("Corrections (0 erreur)")
+        self.correction_group = QGroupBox("")
         correction_layout = QVBoxLayout(self.correction_group)
         correction_layout.setContentsMargins(5, 5, 5, 5)
         
@@ -196,14 +200,14 @@ class SpellCheckerGUI(QMainWindow):
         layout.addWidget(video_group)
         
         # Dictionnaire personnel
-        dict_group = QGroupBox("Dictionnaire Personnel")
+        dict_group = QGroupBox("")
         dict_layout = QVBoxLayout(dict_group)
-        dict_layout.setContentsMargins(5, 5, 5, 5)
+        dict_layout.setContentsMargins(2, 2, 2, 2)  # Réduire les marges
         
         self.dict_tree = QTreeWidget()
         self.dict_tree.setHeaderLabels(["Mot", "Correction"])
         self.dict_tree.itemDoubleClicked.connect(self.on_dict_word_double_click)
-        self.dict_tree.setMaximumHeight(200)  # Réduire la hauteur de moitié
+        self.dict_tree.setMaximumHeight(150)  # Réduire la hauteur
         dict_layout.addWidget(self.dict_tree)
         
         # Boutons pour le dictionnaire
@@ -224,6 +228,52 @@ class SpellCheckerGUI(QMainWindow):
         dict_layout.addLayout(buttons_layout)
         
         layout.addWidget(dict_group)
+        
+        # Fenêtre des erreurs trouvées
+        errors_group = QGroupBox("")
+        errors_layout = QVBoxLayout(errors_group)
+        errors_layout.setContentsMargins(5, 5, 5, 5)
+        
+        # Layout horizontal pour les deux cadres
+        errors_split_layout = QHBoxLayout()
+        
+        # Cadre pour la liste des erreurs
+        errors_list_frame = QFrame()
+        errors_list_frame.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Sunken)
+        errors_list_layout = QVBoxLayout(errors_list_frame)
+        errors_list_layout.setContentsMargins(2, 2, 2, 2)  # Réduire les marges
+        
+        errors_list_label = QLabel("Liste des erreurs")
+        errors_list_layout.addWidget(errors_list_label)
+        
+        self.errors_list = QListWidget()
+        self.errors_list.setMaximumHeight(150)  # Réduire la hauteur
+        errors_list_layout.addWidget(self.errors_list)
+        
+        # Cadre pour les suggestions
+        suggestions_frame = QFrame()
+        suggestions_frame.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Sunken)
+        suggestions_layout = QVBoxLayout(suggestions_frame)
+        suggestions_layout.setContentsMargins(2, 2, 2, 2)  # Réduire les marges
+        
+        suggestions_label = QLabel("Suggestions")
+        suggestions_layout.addWidget(suggestions_label)
+        
+        self.suggestions_list = QListWidget()
+        self.suggestions_list.setMaximumHeight(150)  # Réduire la hauteur
+        suggestions_layout.addWidget(self.suggestions_list)
+        
+        # Ajouter les cadres au layout horizontal
+        errors_split_layout.addWidget(errors_list_frame)
+        errors_split_layout.addWidget(suggestions_frame)
+        
+        # Ajouter le layout horizontal au layout principal
+        errors_layout.addLayout(errors_split_layout)
+        
+        # Connecter le signal de sélection
+        self.errors_list.currentItemChanged.connect(self.on_error_selected)
+        
+        layout.addWidget(errors_group)
         
     def open_file(self):
         file_name, _ = QFileDialog.getOpenFileName(self, "Ouvrir un fichier", "", 
@@ -285,6 +335,12 @@ class SpellCheckerGUI(QMainWindow):
         self.progress_bar.setVisible(False)
         self.status_label.setText("Vérification terminée")
         
+        # Afficher les erreurs dans la liste
+        self.errors_list.clear()
+        self.suggestions_list.clear()
+        for word, start, length in error_words:
+            self.errors_list.addItem(word)
+            
     def clear_highlights(self):
         """Efface tous les surlignages"""
         self.highlighter.error_words = []
@@ -317,7 +373,7 @@ class SpellCheckerGUI(QMainWindow):
                               f"Voulez-vous supprimer la correction '{correction}' pour '{word}' ?",
                               QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
             del self.dict_manager.corrections_perso[word]
-            self.dict_manager.save_custom_corrections()
+            self.dict_manager.save_custom_corrections(self.dict_manager.corrections_perso)
             self.refresh_dict()
             
     def load_video(self):
@@ -458,14 +514,26 @@ class SpellCheckerGUI(QMainWindow):
         if item:
             word = item.text(0)
             if QMessageBox.question(self, "Supprimer", 
-                                  f"Voulez-vous supprimer '{word}' du dictionnaire ?",
-                                  QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
+                              f"Voulez-vous supprimer '{word}' du dictionnaire ?",
+                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
                 del self.dict_manager.corrections_perso[word]
-                self.dict_manager.save_custom_corrections()
+                self.dict_manager.save_custom_corrections(self.dict_manager.corrections_perso)
                 self.refresh_dict()
         else:
             QMessageBox.warning(self, "Attention", "Veuillez sélectionner un mot à supprimer")
             
+    def on_error_selected(self, current, previous):
+        """Appelé quand un mot erroné est sélectionné"""
+        if current:
+            word = current.text()
+            # Effacer les suggestions précédentes
+            self.suggestions_list.clear()
+            # Obtenir les suggestions pour ce mot
+            suggestions = self.spell_manager.spell.candidates(word)
+            # Afficher les suggestions
+            for suggestion in suggestions:
+                self.suggestions_list.addItem(suggestion)
+
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)

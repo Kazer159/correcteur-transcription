@@ -26,10 +26,12 @@ def load_video(self, url)
   - `url` : L'URL de la vidéo YouTube
 - **Fonctionnalités :**
   - Nettoyage de l'URL (suppression des espaces)
-  - Tentative de chargement de la vidéo via pytube
-  - Récupération du titre de la vidéo
-  - Gestion des erreurs avec message d'avertissement
-  - Mise à jour du label de statut
+  - Configuration de YouTube sans OAuth (use_oauth=False, allow_oauth_cache=False)
+  - Tentative de chargement des métadonnées avec gestion d'erreur robuste
+  - Fallback sur l'ID de la vidéo si le titre ne peut pas être récupéré
+  - Stockage de l'URL courante
+  - Mise à jour du label de statut avec le titre de la vidéo
+  - Gestion des erreurs avec message d'avertissement détaillé
 
 ## Dépendances
 - PyQt6 :

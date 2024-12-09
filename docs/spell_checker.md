@@ -24,11 +24,12 @@ def check_word(self, word)
 - **Paramètres :**
   - `word` : Le mot à vérifier
 - **Particularités :**
-  - Gestion spéciale des mots avec apostrophe
+  - Les mots avec apostrophe sont automatiquement considérés comme corrects
   - Ignore les mots de 2 caractères ou moins
   - Ignore les nombres
+  - Nettoie la ponctuation avant la vérification
 - **Retour :**
-  - `True` si le mot est correct ou ignoré
+  - `True` si le mot est correct, contient une apostrophe, ou doit être ignoré
   - `False` si le mot est mal orthographié
 
 #### get_suggestions(word)
@@ -90,4 +91,3 @@ for match in checker.extract_words("Le texte à vérifier"):
     word = match.group(1)
     if not checker.check_word(word):
         print(f"Erreur : {word}")
-```
